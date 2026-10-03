@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}RelationX - Student Analyzer{% endblock %}</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="dashboard">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h2>Relation<span>X</span></h2>
+            <p class="subtitle">Student Relationship Analyzer</p>
+
+            <nav>
+                <a href="{{ url_for('home') }}">Dashboard</a>
+                <a href="{{ url_for('students') }}">Students</a>
+                <a href="{{ url_for('relationships') }}">Relationships</a>
+                <a href="{{ url_for('analyzer') }}">Relation Analyzer</a>
+                <a href="{{ url_for('matrix') }}">Relation Matrix</a>
+                <a href="{{ url_for('network') }}">Network Graph</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+
+            <!-- Flash Messages -->
+            <div class="flash-container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Page Content -->
+            <main>
+                {% block content %}
+                {% endblock %}
+            </main>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>RelationX | DML Micro Project</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
+

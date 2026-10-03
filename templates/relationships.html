@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relationships | Student Analyzer</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .relation-card {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 18px rgba(30, 50, 90, 0.06);
+        }
+
+        .relation-card h2 {
+            font-size: 21px;
+            margin-bottom: 8px;
+            color: #172b4d;
+        }
+
+        .description {
+            color: #718099;
+            font-size: 14px;
+            margin-bottom: 22px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-field label {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-field select {
+            padding: 13px;
+            border: 1px solid #dce3ee;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .add-btn {
+            background: #2859a5;
+            color: white;
+            padding: 13px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .add-btn:hover {
+            background: #1e4789;
+        }
+
+        .table-card {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(30, 50, 90, 0.06);
+        }
+
+        .table-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .table-heading h2 {
+            font-size: 21px;
+        }
+
+        .count {
+            background: #e8f0ff;
+            color: #2859a5;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #edf0f5;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f5f7fb;
+            color: #53627a;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            background: #e8f0ff;
+            color: #2859a5;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: #ffebeb;
+            color: #c12e36;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: #ffdada;
+        }
+
+        .notice {
+            padding: 13px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+        }
+
+        .notice.success {
+            background: #e5f7eb;
+            color: #176b39;
+        }
+
+        .notice.error {
+            background: #ffeded;
+            color: #b4232d;
+        }
+
+        .note {
+            margin-top: 20px;
+            padding: 14px;
+            background: #f0f5ff;
+            border-left: 4px solid #3974d1;
+            border-radius: 6px;
+            color: #344258;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #718099;
+        }
+
+        @media (max-width: 650px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .relation-card,
+            .table-card {
+                padding: 17px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="dashboard">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2>Relation<span>X</span></h2>
+        <p class="subtitle">Student Analyzer</p>
+
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/students">Students</a>
+            <a href="/relationships" class="active">Relationships</a>
+            <a href="/analyzer">Relation Analyzer</a>
+            <a href="/network">Network Graph</a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <header>
+            <div>
+                <h1>Relationship Management</h1>
+                <p>Create and manage connections between students</p>
+            </div>
+        </header>
+
+        <!-- FLASH MESSAGES -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="notice {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <!-- ADD RELATIONSHIP -->
+        <section class="relation-card">
+
+            <h2>+ Create New Relationship</h2>
+
+            <p class="description">
+                Select two students and define their relationship.
+            </p>
+
+            {% if students|length < 2 %}
+
+                <div class="note">
+                    You need at least two students to create a
+                    relationship. Please add more students first.
+                </div>
+
+            {% else %}
+
+                <form method="POST"
+                      action="{{ url_for('relationships') }}">
+
+                    <div class="form-grid">
+
+                        <div class="form-field">
+                            <label for="student1_id">
+                                First Student
+                            </label>
+
+                            <select id="student1_id"
+                                    name="student1_id"
+                                    required>
+
+                                <option value="">
+                                    Select first student
+                                </option>
+
+                                {% for student in students %}
+                                    <option value="{{ student.id }}">
+                                        {{ student.name }}
+                                        ({{ student.roll_no }})
+                                    </option>
+                                {% endfor %}
+
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="student2_id">
+                                Second Student
+                            </label>
+
+                            <select id="student2_id"
+                                    name="student2_id"
+                                    required>
+
+                                <option value="">
+                                    Select second student
+                                </option>
+
+                                {% for student in students %}
+                                    <option value="{{ student.id }}">
+                                        {{ student.name }}
+                                        ({{ student.roll_no }})
+                                    </option>
+                                {% endfor %}
+
+                            </select>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="relation_type">
+                                Relationship Type
+                            </label>
+
+                            <select id="relation_type"
+                                    name="relation_type"
+                                    required>
+
+                                <option value="">
+                                    Select relationship
+                                </option>
+
+                                <option value="Friendship">
+                                    Friendship
+                                </option>
+
+                                <option value="Study Partner">
+                                    Study Partner
+                                </option>
+
+                                <option value="Classmate">
+                                    Classmate
+                                </option>
+
+                                <option value="Mentor">
+                                    Mentor
+                                </option>
+
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <button type="submit" class="add-btn">
+                        + Add Relationship
+                    </button>
+
+                </form>
+
+            {% endif %}
+
+            <div class="note">
+                <strong>Mathematical note:</strong>
+                Each relationship represents an ordered pair
+                (Student 1, Student 2). For example, Ali → Rahul
+                is stored separately from Rahul → Ali.
+                This helps analyze symmetry and antisymmetry.
+            </div>
+
+        </section>
+
+        <!-- ALL RELATIONSHIPS -->
+        <section class="table-card">
+
+            <div class="table-heading">
+                <h2>All Relationships</h2>
+
+                <span class="count">
+                    {{ relationships|length }} Connections
+                </span>
+            </div>
+
+            <div class="table-scroll">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>First Student</th>
+                            <th>Relationship</th>
+                            <th>Second Student</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for relation in relationships %}
+
+                            <tr>
+                                <td>{{ relation.id }}</td>
+
+                                <td>
+                                    <strong>
+                                        {{ relation.student1_name }}
+                                    </strong>
+                                    <br>
+                                    <small>
+                                        {{ relation.student1_roll }}
+                                    </small>
+                                </td>
+
+                                <td>
+                                    <span class="type-badge">
+                                        {{ relation.relation_type }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        {{ relation.student2_name }}
+                                    </strong>
+                                    <br>
+                                    <small>
+                                        {{ relation.student2_roll }}
+                                    </small>
+                                </td>
+
+                                <td>
+                                    <form method="POST"
+                                          action="{{ url_for('delete_relationship', relationship_id=relation.id) }}"
+                                          onsubmit="return confirm('Delete this relationship?')">
+
+                                        <button type="submit"
+                                                class="delete-btn">
+                                            Delete
+                                        </button>
+
+                                    </form>
+                                </td>
+                            </tr>
+
+                        {% else %}
+
+                            <tr>
+                                <td colspan="5" class="empty-message">
+                                    No relationships created yet.
+                                </td>
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+
+            </div>
+        </section>
+
+    </main>
+</div>
+</body>
+</html>

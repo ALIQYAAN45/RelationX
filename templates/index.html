@@ -1,0 +1,143 @@
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard | RelationX{% endblock %}
+
+{% block content %}
+
+<!-- HEADER -->
+<header>
+    <div>
+        <h1>Dashboard</h1>
+        <p>Welcome to your Student Relationship Analyzer</p>
+    </div>
+    <div class="profile">DML Project</div>
+</header>
+
+<!-- STATISTICS -->
+<section class="stats">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">👨‍🎓</div>
+        <p>Total Students</p>
+        <h2>{{ total_students }}</h2>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">🔗</div>
+        <p>Total Relationships</p>
+        <h2>{{ total_relationships }}</h2>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">📊</div>
+        <p>Relation Types</p>
+        <h2>{{ relation_types }}</h2>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">📈</div>
+        <p>Relationship Density</p>
+        <h2>{{ density }}%</h2>
+        <small>Network connectivity</small>
+    </div>
+
+</section>
+
+<!-- WELCOME CARD -->
+<section class="welcome-card">
+    <div>
+        <h2>Explore Student Connections</h2>
+        <p>
+            Manage students, create relations, and analyze
+            mathematical properties of relations.
+        </p>
+        <a href="{{ url_for('analyzer') }}" class="primary-btn">
+            Start Analysis
+        </a>
+    </div>
+
+    <div class="welcome-icon">🌐</div>
+</section>
+
+<!-- RELATIONSHIP CHART -->
+<section class="chart-section">
+    <h2>Relationship Distribution</h2>
+    <p>Overview of relationships by category</p>
+
+    {% if relationship_distribution %}
+    <div class="chart-container">
+        <canvas id="relationshipChart"></canvas>
+    </div>
+    {% else %}
+    <p class="empty">No relationships available to display yet.</p>
+    {% endif %}
+</section>
+
+<!-- ABOUT PROJECT -->
+<section class="info-section">
+    <h2>About the Project</h2>
+    <p>
+        This project demonstrates the practical application
+        of Discrete Mathematics and Logic using sets,
+        ordered pairs, relations, matrices, and graph theory.
+    </p>
+</section>
+
+<!-- CHART SCRIPT -->
+{% if relationship_distribution %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const relationLabels = {{ relationship_distribution
+        | map(attribute='relation_type')
+        | list
+        | tojson }};
+
+    const relationCounts = {{ relationship_distribution
+        | map(attribute='total')
+        | list
+        | tojson }};
+
+    const ctx = document.getElementById('relationshipChart');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: relationLabels,
+            datasets: [{
+                label: 'Number of Relationships',
+                data: relationCounts,
+                backgroundColor: [
+                    '#6366f1',
+                    '#06b6d4',
+                    '#10b981',
+                    '#f59e0b'
+                ],
+                borderRadius: 8,
+                barThickness: 45
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
+
+{% endblock %}
+

@@ -1,0 +1,188 @@
+
+{% extends "base.html" %}
+
+{% block title %}Network Graph | RelationX{% endblock %}
+
+{% block content %}
+
+<div class="network-page">
+
+    <h1>Student Network Graph</h1>
+    <p>Visualize how students are connected through relationships.</p>
+
+    <!-- Relationship Legend -->
+    <div style="
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin: 20px 0;
+        font-weight: 600;
+    ">
+        <span style="color: #16a34a;">● Friendship</span>
+        <span style="color: #2563eb;">● Study Partner</span>
+        <span style="color: #d97706;">● Classmate</span>
+        <span style="color: #9333ea;">● Mentor</span>
+    </div>
+
+    <!-- Graph Container -->
+    <div id="networkGraph" style="
+        width: 100%;
+        height: 550px;
+        background: #ffffff;
+        border: 1px solid #dbeafe;
+        border-radius: 16px;
+        margin-top: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+    "></div>
+
+    <p id="graphMessage" style="
+        color: #dc2626;
+        margin-top: 12px;
+    "></p>
+
+</div>
+
+<!-- Graph Library -->
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const container = document.getElementById("networkGraph");
+    const message = document.getElementById("graphMessage");
+
+    // Check graph library
+    if (typeof vis === "undefined") {
+        message.textContent =
+            "Graph library could not load. Check your internet connection.";
+        return;
+    }
+
+    // Student nodes
+    const nodes = new vis.DataSet([
+        {% for student in students %}
+        {
+            id: {{ student["id"] | tojson }},
+            label: {{ (student["name"] ~ "\nRoll: " ~ student["roll_no"]) | tojson }},
+            title: {{ student["department"] | tojson }},
+            color: {
+                background: "#dbeafe",
+                border: "#2563eb",
+                highlight: {
+                    background: "#bfdbfe",
+                    border: "#1d4ed8"
+                }
+            }
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]);
+
+    // Relationship colors
+    const relationColors = {
+        "Friendship": "#16a34a",
+        "Study Partner": "#2563eb",
+        "Classmate": "#d97706",
+        "Mentor": "#9333ea"
+    };
+
+    // Relationship edges
+    const edges = new vis.DataSet([
+        {% for rel in relationships %}
+        {
+            id: {{ rel["id"] | tojson }},
+            from: {{ rel["student1_id"] | tojson }},
+            to: {{ rel["student2_id"] | tojson }},
+            label: {{ rel["relation_type"] | tojson }},
+            arrows: "to",
+            color: {
+                color: relationColors[{{ rel["relation_type"] | tojson }}] || "#64748b",
+                highlight: "#0f172a"
+            },
+            width: 2.5,
+            font: {
+                size: 13,
+                color: "#334155",
+                background: "#ffffff",
+                strokeWidth: 0,
+                align: "middle"
+            }
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]);
+
+    // Check student data
+    if (nodes.length === 0) {
+        message.textContent = "No students found. Add students first.";
+        return;
+    }
+
+    // Graph options
+    const options = {
+
+        nodes: {
+            shape: "dot",
+            size: 30,
+            borderWidth: 3,
+            font: {
+                size: 17,
+                face: "Arial",
+                color: "#1e293b",
+                bold: true
+            }
+        },
+
+        edges: {
+            smooth: {
+                type: "curvedCW",
+                roundness: 0.15
+            },
+            arrows: {
+                to: {
+                    enabled: true,
+                    scaleFactor: 0.8
+                }
+            }
+        },
+
+        physics: {
+            enabled: true,
+            stabilization: {
+                iterations: 200
+            },
+            barnesHut: {
+                gravitationalConstant: -3500,
+                centralGravity: 0.25,
+                springLength: 180,
+                springConstant: 0.04
+            }
+        },
+
+        interaction: {
+            hover: true,
+            dragNodes: true,
+            zoomView: true,
+            navigationButtons: true,
+            keyboard: true
+        }
+    };
+
+    // Create graph
+    const data = {
+        nodes: nodes,
+        edges: edges
+    };
+
+    const network = new vis.Network(
+        container,
+        data,
+        options
+    );
+
+    // Fit graph to available space
+    network.fit();
+
+});
+</script>
+
+{% endblock %}
+

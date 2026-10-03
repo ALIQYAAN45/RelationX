@@ -1,0 +1,138 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}Relation Matrix | RelationX{% endblock %}
+
+{% block content %}
+
+<div class="matrix-page">
+
+    <!-- Colorful Page Header -->
+    <div class="page-header">
+        <div>
+            <span class="hero-tag">RELATIONX ANALYTICS</span>
+            <h1>Relation Matrix</h1>
+            <p>
+                Visualize student relationships using a mathematical matrix.
+            </p>
+        </div>
+        <div class="matrix-header-icon">▦</div>
+    </div>
+
+    <!-- Relationship Selection -->
+    <div class="analyzer-container">
+        <div class="analyzer-card">
+
+            <div class="matrix-section-heading">
+                <div class="matrix-section-icon">⚙️</div>
+                <div>
+                    <h2>Select a Relationship</h2>
+                    <p>
+                        Choose a relationship type to generate its matrix.
+                        1 means a connection exists, while 0 means no connection.
+                    </p>
+                </div>
+            </div>
+
+            {% if relation_types %}
+            <form method="POST" action="{{ url_for('matrix') }}" class="matrix-form">
+
+                <div class="select-field">
+                    <label for="relation_type">Relationship Type</label>
+
+                    <select name="relation_type" id="relation_type" required>
+                        <option value="">-- Select a relation --</option>
+
+                        {% for relation in relation_types %}
+                        <option value="{{ relation }}"
+                            {% if selected_type == relation %}selected{% endif %}>
+                            {{ relation }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="analyze-btn">
+                    Generate Matrix <span>→</span>
+                </button>
+
+            </form>
+            {% else %}
+            <div class="matrix-empty">
+                <p>No relationships available. Add relationships first.</p>
+                <a href="{{ url_for('relationships') }}">Add Relationships</a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- Matrix Result -->
+    {% if matrix_data is not none %}
+    <div class="analyzer-card matrix-result">
+
+        <div class="matrix-heading">
+            <div>
+                <span class="section-kicker">MATRIX RESULTS</span>
+                <h2>{{ selected_type }} Matrix</h2>
+                <p>Total students: <strong>{{ students|length }}</strong></p>
+            </div>
+
+            <div class="matrix-badge">MATRIX VIEW</div>
+        </div>
+
+        {% if students %}
+        <div class="matrix-wrapper">
+            <table class="relation-matrix">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        {% for student in students %}
+                        <th title="{{ student['name'] }}">
+                            {{ student['name'] }}
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <th>{{ student['name'] }}</th>
+
+                        {% for value in matrix_data[loop.index0] %}
+                        <td class="{% if value == 1 %}matrix-one{% else %}matrix-zero{% endif %}">
+                            {{ value }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="matrix-empty">
+            <p>No students are available to generate a matrix.</p>
+        </div>
+        {% endif %}
+
+        <!-- Legend -->
+        <div class="matrix-legend">
+            <span>
+                <strong class="legend-one">1</strong>
+                Relationship exists
+            </span>
+
+            <span>
+                <strong class="legend-zero">0</strong>
+                No relationship
+            </span>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
+```

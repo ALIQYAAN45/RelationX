@@ -1,0 +1,206 @@
+
+{% extends "base.html" %}
+
+{% block title %}Relation Analyzer | Student Analyzer{% endblock %}
+
+{% block content %}
+
+<div class="analyzer-page">
+
+    <!-- Hero Section -->
+    <section class="analyzer-hero">
+        <div class="hero-content">
+            <span class="hero-tag">MATHEMATICAL RELATIONSHIP ANALYSIS</span>
+            <h1>Relation <span>Analyzer</span></h1>
+            <p>
+                Explore how students are connected.
+                Analyze relationships using four important
+                mathematical properties.
+            </p>
+            <div class="hero-features">
+                <span>✦ Reflexive</span>
+                <span>✦ Symmetric</span>
+                <span>✦ Antisymmetric</span>
+                <span>✦ Transitive</span>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="orbit orbit-one"></div>
+            <div class="orbit orbit-two"></div>
+            <div class="orbit-center">R</div>
+            <div class="orbit-node node-one">A</div>
+            <div class="orbit-node node-two">B</div>
+            <div class="orbit-node node-three">C</div>
+        </div>
+    </section>
+
+    <!-- Relation Selection -->
+    <section class="analyzer-selector">
+        <div class="selector-heading">
+            <div class="section-number">01</div>
+            <div>
+                <h2>Configure Analysis</h2>
+                <p>Choose a relationship type to begin.</p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('analyzer') }}"
+              class="analyzer-form">
+            <div class="select-field">
+                <label for="relation_type">Relationship Type</label>
+                <select name="relation_type" id="relation_type" required>
+                    <option value="">Choose a relation</option>
+                    {% for relation in relation_types %}
+                        <option value="{{ relation }}"
+                            {% if selected_type == relation %}selected{% endif %}>
+                            {{ relation }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="analyze-btn">
+                Analyze Relation <span>→</span>
+            </button>
+        </form>
+    </section>
+
+    <!-- Analysis Results -->
+    {% if results %}
+    <section class="results-section">
+        <div class="results-heading">
+            <div>
+                <span class="section-kicker">02 / ANALYSIS REPORT</span>
+                <h2>Analysis Results</h2>
+                <p>Mathematical properties for
+                    <strong>{{ selected_type }}</strong>
+                </p>
+            </div>
+            <div class="pair-count">
+                <span>ORDERED PAIRS</span>
+                <strong>{{ results.pair_count }}</strong>
+            </div>
+        </div>
+
+        <div class="property-grid">
+
+            <!-- Reflexive -->
+            <article class="property-card">
+                <div class="property-top">
+                    <div class="property-icon reflexive-icon">R</div>
+                    <span class="property-index">01</span>
+                </div>
+                <h3>Reflexive</h3>
+                <p class="property-definition">
+                    Every student must have a relationship with themselves.
+                </p>
+                {% if results.reflexive %}
+                    <div class="result-badge passed">
+                        <span>✓</span> Satisfied
+                    </div>
+                    <p class="result-detail">
+                        All required self-relationships (a, a) are present.
+                    </p>
+                {% else %}
+                    <div class="result-badge failed">
+                        <span>✕</span> Not Satisfied
+                    </div>
+                    <p class="result-detail">
+                        At least one self-relationship (a, a) is missing.
+                    </p>
+                {% endif %}
+            </article>
+
+            <!-- Symmetric -->
+            <article class="property-card">
+                <div class="property-top">
+                    <div class="property-icon symmetric-icon">S</div>
+                    <span class="property-index">02</span>
+                </div>
+                <h3>Symmetric</h3>
+                <p class="property-definition">
+                    A relationship in one direction must also exist in reverse.
+                </p>
+                {% if results.symmetric %}
+                    <div class="result-badge passed">
+                        <span>✓</span> Satisfied
+                    </div>
+                    <p class="result-detail">
+                        Every pair (a, b) has its reverse pair (b, a).
+                    </p>
+                {% else %}
+                    <div class="result-badge failed">
+                        <span>✕</span> Not Satisfied
+                    </div>
+                    <p class="result-detail">
+                        At least one relationship is missing its reverse pair.
+                    </p>
+                {% endif %}
+            </article>
+
+            <!-- Antisymmetric -->
+            <article class="property-card">
+                <div class="property-top">
+                    <div class="property-icon antisymmetric-icon">A</div>
+                    <span class="property-index">03</span>
+                </div>
+                <h3>Antisymmetric</h3>
+                <p class="property-definition">
+                    Two different students cannot be related in both directions.
+                </p>
+                {% if results.antisymmetric %}
+                    <div class="result-badge passed">
+                        <span>✓</span> Satisfied
+                    </div>
+                    <p class="result-detail">
+                        No distinct students have relationships in both directions.
+                    </p>
+                {% else %}
+                    <div class="result-badge failed">
+                        <span>✕</span> Not Satisfied
+                    </div>
+                    <p class="result-detail">
+                        Two distinct students are related in both directions.
+                    </p>
+                {% endif %}
+            </article>
+
+            <!-- Transitive -->
+            <article class="property-card">
+                <div class="property-top">
+                    <div class="property-icon transitive-icon">T</div>
+                    <span class="property-index">04</span>
+                </div>
+                <h3>Transitive</h3>
+                <p class="property-definition">
+                    If A is related to B and B to C, A must be related to C.
+                </p>
+                {% if results.transitive %}
+                    <div class="result-badge passed">
+                        <span>✓</span> Satisfied
+                    </div>
+                    <p class="result-detail">
+                        Every two-step relationship chain has its required connection.
+                    </p>
+                {% else %}
+                    <div class="result-badge failed">
+                        <span>✕</span> Not Satisfied
+                    </div>
+                    <p class="result-detail">
+                        At least one two-step chain is missing its required connection.
+                    </p>
+                {% endif %}
+            </article>
+
+        </div>
+    </section>
+    {% else %}
+    <section class="analyzer-empty">
+        <div class="empty-symbol">↗</div>
+        <h2>Your analysis will appear here</h2>
+        <p>Select a relationship above and click Analyze Relation to view the results.</p>
+    </section>
+    {% endif %}
+
+</div>
+
+{% endblock %}
